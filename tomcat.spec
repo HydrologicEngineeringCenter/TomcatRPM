@@ -83,6 +83,24 @@ mkdir -p %{buildroot}/%{catalina_base}/temp
 mkdir -p %{buildroot}/%{catalina_base}/logs
 cp -r work %{buildroot}/%{catalina_base}
 
+#Conditions for installing the manager and host-manager applications
+#If a fresh install, manager application will be installed
+#If an upgrade, manager application will only be upgraded IF it currently exists within the Tomcat webapps directory. 
+#This gives users the ability to remove the manager applications if unneedded and them not be reinstalled during upgrades.  
+if [ "$1" == 1 ]; then
+    # Fresh install
+    cp -r %{catalina_home}/webapps/manager %{catalina_base}/webapps/
+    cp -r %{catalina_home}/webapps/host-manager %{catalina_base}/webapps/
+elif [ "$1" == 2 ]; then
+    # Upgrade
+    if [ -d %{catalina_base}/webapps/manager ]; then
+        cp -r %{catalina_home}/webapps/manager %{catalina_base}/webapps/
+    fi
+    if [ -d %{catalina_base}/webapps/host-manager ]; then
+        cp -r %{catalina_home}/webapps/host-manager %{catalina_base}/webapps/
+    fi
+fi
+
 %files
 %attr(0644,root,root) %{_unitdir}/tomcat9.service
 %defattr(0640,tomcat,%tomcat_group,0750)
@@ -117,24 +135,6 @@ if [ "$1" == 2 ]; then
         echo "5. copy your backup back to %{catalina_base}"
         echo "The problem portion of the RPM has been removed and this won't be an issue in the future. Sorry for the inconvience."
         exit 1
-    fi
-fi
-
-#Conditions for installing the manager and host-manager applications
-#If a fresh install, manager application will be installed
-#If an upgrade, manager application will only be upgraded IF it currently exists within the Tomcat webapps directory. 
-#This gives users the ability to remove the manager applications if unneedded and them not be reinstalled during upgrades.  
-if [ "$1" == 1 ]; then
-    # Fresh install
-    cp -r %{catalina_home}/webapps/manager %{catalina_base}/webapps/
-    cp -r %{catalina_home}/webapps/host-manager %{catalina_base}/webapps/
-elif [ "$1" == 2 ]; then
-    # Upgrade
-    if [ -d %{catalina_base}/webapps/manager ]; then
-        cp -r %{catalina_home}/webapps/manager %{catalina_base}/webapps/
-    fi
-    if [ -d %{catalina_base}/webapps/host-manager ]; then
-        cp -r %{catalina_home}/webapps/host-manager %{catalina_base}/webapps/
     fi
 fi
 
