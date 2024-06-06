@@ -120,4 +120,21 @@ if [ "$1" == 2 ]; then
     fi
 fi
 
+#Conditions for installing the manager and host-manager applications
+#If a fresh install, manager application will be installed
+#If an upgrade, manager application will only be upgraded IF it currently exists within the Tomcat webapps directory. 
+#This gives users the ability to remove the manager applications if unneedded and them not be reinstalled during upgrades.  
+if [ "$1" == 1 ]; then
+    # Fresh install
+    cp -r /webapps/manager %{catalina_base}/webapps/
+    cp -r /webapps/host-manager %{catalina_base}/webapps/
+elif [ "$1" == 2 ]; then
+    # Upgrade
+    if [ -d %{catalina_base}/webapps/manager ]; then
+        cp -r /webapps/manager %{catalina_base}/webapps/
+    fi
+    if [ -d %{catalina_base}/webapps/host-manager ]; then
+        cp -r /webapps/host-manager %{catalina_base}/webapps/
+    fi
+
 
